@@ -2,19 +2,19 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Admins on Spinal Coding</title>
-    <link>http://szaq.github.io/admin/</link>
+    <link>http://spinaldevelopment.com/admin/</link>
     <description>Recent content in Admins on Spinal Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Tue, 14 Jun 2016 21:29:38 +0200</lastBuildDate>
-    <atom:link href="http://szaq.github.io/admin/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://spinaldevelopment.com/admin/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>We&#39;re launching</title>
-      <link>http://szaq.github.io/admin/launch/</link>
+      <link>http://spinaldevelopment.com/admin/launch/</link>
       <pubDate>Tue, 14 Jun 2016 21:29:38 +0200</pubDate>
       
-      <guid>http://szaq.github.io/admin/launch/</guid>
+      <guid>http://spinaldevelopment.com/admin/launch/</guid>
       <description>
 
 &lt;h1 id=&#34;launch-time&#34;&gt;Launch time&lt;/h1&gt;
