@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Posts on Spinal Coding</title>
-    <link>http://spinaldevelopment.com/post/</link>
-    <description>Recent content in Posts on Spinal Coding</description>
+    <title>Dev on Spinal Coding</title>
+    <link>http://spinaldevelopment.com/categories/dev/</link>
+    <description>Recent content in Dev on Spinal Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 15 Jun 2016 21:54:10 +0200</lastBuildDate>
-    <atom:link href="http://spinaldevelopment.com/post/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://spinaldevelopment.com/categories/dev/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Swift binary in nonswift environment</title>
@@ -40,22 +40,6 @@ Unfortunately relative paths are not permitted. But one may use path variables d
 - &lt;code&gt;@executable_path&lt;/code&gt; - Path to folder containing process main binary.&lt;/p&gt;
 
 &lt;h2 id=&#34;install-name-tool&#34;&gt;install_name_tool&lt;/h2&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>We&#39;re launching</title>
-      <link>http://spinaldevelopment.com/post/launch/</link>
-      <pubDate>Tue, 14 Jun 2016 21:29:38 +0200</pubDate>
-      
-      <guid>http://spinaldevelopment.com/post/launch/</guid>
-      <description>
-
-&lt;h1 id=&#34;launch-time&#34;&gt;Launch time&lt;/h1&gt;
-
-&lt;p&gt;Welcome all the interwebz. I&amp;rsquo;ve decided for the &lt;em&gt;nth&lt;/em&gt; time to start a coding blog. I hope this time I will persist in this endeavor. I plan to write about fun coding stuff.&lt;/p&gt;
-
-&lt;p&gt;Few words about me. My name is &lt;em&gt;Łukasz Kwoska&lt;/em&gt;. I have been a developer for many years. Mostly mobile developer, but I am interested in all kinds of &lt;em&gt;graphics&lt;/em&gt;, &lt;em&gt;audio&lt;/em&gt; and &lt;em&gt;algorithmic&lt;/em&gt; stuff.&lt;/p&gt;
 </description>
     </item>
     
