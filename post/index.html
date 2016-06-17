@@ -50,7 +50,11 @@
     </header>
     
     <section class="post-excerpt">
-        <p>How to load swift binary in nonswift environment Ever wanted to use swift to write your custom plugin for XXX and got dreaded: dlopen(TestFramework.framework/TestFramework, 5): Library not loaded: @rpath/libswiftAppKit.dylib This error happens because loader can&rsquo;t find swift libraries. But why is it so? Culprit of this error is @rpath. @rpath Swift libraries are referenced using run-paths. They&rsquo;re described in apple documentation. You can use otool -L &lt;Path_To_Binary&gt; to see that. You may get something similar to: /System/Library/Frameworks/AudioToolbox.framework/Versions/A/AudioToolbox (compatibility version 1.0.0, current version 492.0.0) /System/Library/Frameworks/AudioUnit.framework/Versions/A/AudioUnit (compatibility version 1.0.0, current version 1.0.0) /System/Library/Frameworks/Foundation.framework/Versions/C/Foundation (compatibility version 300.0.0, current version 1258.0.0) /usr/lib/libobjc.A.dylib (compatibility version 1.0.0, current version 228.0.0) /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1226.10.1) @rpath/libswiftAppKit.dylib (compatibility version 1.0.0, current version 703.0.18) @rpath/libswiftCore.dylib (compatibility version 1.0.0, current version 703.0.18) @rpath/libswiftCoreAudio.dylib (compatibility version 1.0.0, current version 703.0.18) @rpath/libswiftCoreData.dylib (compatibility version 1.0.0, current version 703.0.18) @rpath/libswiftCoreGraphics.dylib (compatibility version 1.0.0, current version 703.0.18) @rpath/libswiftCoreImage.dylib (compatibility version 1.0.0, current version 703.0.18) @rpath/libswiftDarwin.dylib (compatibility version 1.0.0, current version 703.0.18) @rpath/libswiftDispatch.dylib (compatibility version 1.0.0, current version 703.0.18) @rpath/libswiftFoundation.dylib (compatibility version 1.0.0, current version 703.0.18) @rpath/libswiftObjectiveC.dylib (compatibility version 1.0.0, current version 703.0.18) It is the way for application to load libraries from runtime-defined locations.</p>
+        <p><p>Ever wanted to use swift to write your custom plugin for <code>XXX</code> and got dreaded:</p>
+
+<pre><code>dlopen(TestFramework.framework/TestFramework, 5): Library not loaded: @rpath/libswiftAppKit.dylib
+</code></pre>
+</p>
     </section>
 
     <footer class="post-footer">

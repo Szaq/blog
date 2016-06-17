@@ -17,8 +17,6 @@
       <guid>http://spinaldevelopment.com/post/swift-binary-in-nonswift-env/</guid>
       <description>
 
-&lt;h1 id=&#34;how-to-load-swift-binary-in-nonswift-environment&#34;&gt;How to load swift binary in nonswift environment&lt;/h1&gt;
-
 &lt;p&gt;Ever wanted to use swift to write your custom plugin for &lt;code&gt;XXX&lt;/code&gt; and got dreaded:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;dlopen(TestFramework.framework/TestFramework, 5): Library not loaded: @rpath/libswiftAppKit.dylib
