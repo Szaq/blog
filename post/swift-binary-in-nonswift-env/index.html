@@ -65,16 +65,80 @@
 
 <p>Swift libraries are referenced using <em>run-paths</em>. They&rsquo;re described in apple <a href="https://developer.apple.com/library/mac/documentation/DeveloperTools/Conceptual/DynamicLibraries/100-Articles/RunpathDependentLibraries.html">documentation</a>.</p>
 
-<p>It is the way for application to load libraries from yet-to-be-defined locations. Locations to be searched are defined in Xcode using <code>Runpath Search Paths</code> settings.</p>
+<p>You can use <code>otool -L &lt;Path_To_Binary&gt;</code> to see that.
+You may get something similar to:</p>
 
-<p><img src="http://spinaldevelopment.com/static/img/swift-in-nonswift-env-rpath.png" alt="Runpath Search Paths" /></p>
+<pre><code>/System/Library/Frameworks/AudioToolbox.framework/Versions/A/AudioToolbox (compatibility version 1.0.0, current version 492.0.0)
+	/System/Library/Frameworks/AudioUnit.framework/Versions/A/AudioUnit (compatibility version 1.0.0, current version 1.0.0)
+	/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation (compatibility version 300.0.0, current version 1258.0.0)
+	/usr/lib/libobjc.A.dylib (compatibility version 1.0.0, current version 228.0.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1226.10.1)
+	@rpath/libswiftAppKit.dylib (compatibility version 1.0.0, current version 703.0.18)
+	@rpath/libswiftCore.dylib (compatibility version 1.0.0, current version 703.0.18)
+	@rpath/libswiftCoreAudio.dylib (compatibility version 1.0.0, current version 703.0.18)
+	@rpath/libswiftCoreData.dylib (compatibility version 1.0.0, current version 703.0.18)
+	@rpath/libswiftCoreGraphics.dylib (compatibility version 1.0.0, current version 703.0.18)
+	@rpath/libswiftCoreImage.dylib (compatibility version 1.0.0, current version 703.0.18)
+	@rpath/libswiftDarwin.dylib (compatibility version 1.0.0, current version 703.0.18)
+	@rpath/libswiftDispatch.dylib (compatibility version 1.0.0, current version 703.0.18)
+	@rpath/libswiftFoundation.dylib (compatibility version 1.0.0, current version 703.0.18)
+	@rpath/libswiftObjectiveC.dylib (compatibility version 1.0.0, current version 703.0.18)
+</code></pre>
 
-<p>To make swift frameworks visible to loader make sure at least <code>Runpath Search Paths</code> is configured properly.
-Unfortunately relative paths are not permitted. But one may use path variables defined in <a href="https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man1/dyld.1.html">man dyld</a>:
-- <code>@loader_path</code> - Path to folder containing your binary.
-- <code>@executable_path</code> - Path to folder containing process main binary.</p>
+<p>It is the way for application to load libraries from runtime-defined locations. Locations to be searched are defined in Xcode using <code>Runpath Search Paths</code> settings.</p>
 
-<h2 id="install-name-tool">install_name_tool</h2>
+<p><img src="http://spinaldevelopment.com/img/swift-in-nonswift-env-rpath.png" alt="Runpath Search Paths" /></p>
+
+<p><code>Run paths</code> defined in binary can also be inspected using <code>otool</code>.
+Call <code>otool -l &lt;Path_To_Binary&gt;</code> and look for <code>LC_RPATH</code>.
+For example:</p>
+
+<pre><code>Load command 24
+          cmd LC_RPATH
+      cmdsize 40
+         path @loader_path/../Frameworks (offset 12)
+</code></pre>
+
+<h2 id="solution-1-xcode-setting">Solution 1 - Xcode setting</h2>
+
+<p>To make swift frameworks visible to loader make sure the <code>Runpath Search Paths</code> setting is configured properly.
+Unfortunately relative paths are not permitted. But one may use path variables defined in <a href="https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man1/dyld.1.html">man dyld</a>:</p>
+
+<ul>
+<li><code>@loader_path</code> - Path to folder containing your binary. For plugin this is plugin binary&rsquo;s folder.</li>
+<li><code>@executable_path</code> - Path to folder containing process main binary. For plugin this is host application binary&rsquo;s folder.</li>
+</ul>
+
+<p>Depending on the structure of your plugin you may use <code>@loader_path/Frameworks</code>. This will work if your plugin structure is as follows:</p>
+
+<pre><code> - Plugin
+  - PluginBinary
+  - Frameworks
+    - swiftXXX...
+</code></pre>
+
+<p>or you may use <code>@loader_path/../Frameworks</code> if the your plugin structure have AppBundle-like structure:</p>
+
+<pre><code>- Plugin
+ - Contents
+    - MacOS
+      - PluginBinary
+    - Frameworks
+      - swiftXXX...
+</code></pre>
+
+<h2 id="solution-2-install-name-tool">Solution 2 - install_name_tool</h2>
+
+<p>If for some reason you&rsquo;re unable to update <code>Runpath Search Paths</code> setting then you may also use tool <a href="http://www.manpagez.com/man/1/install_name_tool/">install_name_tool</a>. This tool can be used to replace <code>@rpath/swift...</code> references with <code>@loader_path/YYY/swift...</code>.</p>
+
+<p>You may use this script to update all swift references at once:</p>
+
+<pre><code>echo otool -L &quot;$FULL_EXECUTABLE_PATH&quot; | grep @rpath | sed 's/@rpath\///g' | sed 's/ (.*//g' | xargs -t -I{} install_name_tool -change @rpath/{} @loader_path/../Frameworks/{} &quot;$FULL_EXECUTABLE_PATH&quot;
+</code></pre>
+
+<p>where $FULL_EXECUTABLE_PATH must point to the binary.</p>
+
+<p>You may do that automatically after each build by adding this script as a <code>Build Phase</code>. One thing to keep in mind though is that this script will launch before installation phase. I had problems when I tried to mix this <code>Build Phase</code> with <code>Installation Directory</code> build setting and I&rsquo;ve decided to install my plugin manually inside this script instead of using <code>Installation Directory</code> build setting.</p>
 
     </section>
 
@@ -110,8 +174,31 @@ Unfortunately relative paths are not permitted. But one may use path variables d
             </section>
 
             
+            	<span class="f-post-tags"><i class="fa fa-tag"></i>
+            	swift, xcode, rpath, project, otool
+            	</span>
+            
         </section>
-                        
+                
+        <section id="comments">
+            <div id="disqus_thread" class="post-comments"></div>
+            <script type="text/javascript">
+              if (window.location.hostname != "localhost") {
+                var disqus_shortname = 'Szaq';
+                (function() {
+                  var dsq = document.createElement('script');
+                  dsq.type = 'text/javascript';
+                  dsq.async = true;
+                  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+              }
+            </script>
+            <noscript>
+              Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+            </noscript>
+        </section>
+                
     </footer>
 </article>
 	</div>
@@ -127,6 +214,13 @@ Unfortunately relative paths are not permitted. But one may use path variables d
     <script type="text/javascript" src="http://spinaldevelopment.com/js/fittext.js"></script>
     <script type="text/javascript">
       $(".heading").fitText();
+    </script>
+
+    <script>
+        var _gaq=[['_setAccount','UA-79477025-1'],['_trackPageview']];
+        (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+        g.src='//www.google-analytics.com/ga.js';
+        s.parentNode.insertBefore(g,s)}(document,'script'));
     </script>
 
 

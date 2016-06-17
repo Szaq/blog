@@ -6,8 +6,106 @@
     <description>Recent content in Posts on Spinal Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 14 Jun 2016 21:29:38 +0200</lastBuildDate>
+    <lastBuildDate>Wed, 15 Jun 2016 21:54:10 +0200</lastBuildDate>
     <atom:link href="http://spinaldevelopment.com/post/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Swift binary in nonswift environment</title>
+      <link>http://spinaldevelopment.com/post/swift-binary-in-nonswift-env/</link>
+      <pubDate>Wed, 15 Jun 2016 21:54:10 +0200</pubDate>
+      
+      <guid>http://spinaldevelopment.com/post/swift-binary-in-nonswift-env/</guid>
+      <description>
+
+&lt;h1 id=&#34;how-to-load-swift-binary-in-nonswift-environment&#34;&gt;How to load swift binary in nonswift environment&lt;/h1&gt;
+
+&lt;p&gt;Ever wanted to use swift to write your custom plugin for &lt;code&gt;XXX&lt;/code&gt; and got dreaded:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;dlopen(TestFramework.framework/TestFramework, 5): Library not loaded: @rpath/libswiftAppKit.dylib
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This error happens because loader can&amp;rsquo;t find swift libraries. But why is it so? Culprit of this error is &lt;code&gt;@rpath&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;rpath&#34;&gt;@rpath&lt;/h2&gt;
+
+&lt;p&gt;Swift libraries are referenced using &lt;em&gt;run-paths&lt;/em&gt;. They&amp;rsquo;re described in apple &lt;a href=&#34;https://developer.apple.com/library/mac/documentation/DeveloperTools/Conceptual/DynamicLibraries/100-Articles/RunpathDependentLibraries.html&#34;&gt;documentation&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;You can use &lt;code&gt;otool -L &amp;lt;Path_To_Binary&amp;gt;&lt;/code&gt; to see that.
+You may get something similar to:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;/System/Library/Frameworks/AudioToolbox.framework/Versions/A/AudioToolbox (compatibility version 1.0.0, current version 492.0.0)
+	/System/Library/Frameworks/AudioUnit.framework/Versions/A/AudioUnit (compatibility version 1.0.0, current version 1.0.0)
+	/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation (compatibility version 300.0.0, current version 1258.0.0)
+	/usr/lib/libobjc.A.dylib (compatibility version 1.0.0, current version 228.0.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1226.10.1)
+	@rpath/libswiftAppKit.dylib (compatibility version 1.0.0, current version 703.0.18)
+	@rpath/libswiftCore.dylib (compatibility version 1.0.0, current version 703.0.18)
+	@rpath/libswiftCoreAudio.dylib (compatibility version 1.0.0, current version 703.0.18)
+	@rpath/libswiftCoreData.dylib (compatibility version 1.0.0, current version 703.0.18)
+	@rpath/libswiftCoreGraphics.dylib (compatibility version 1.0.0, current version 703.0.18)
+	@rpath/libswiftCoreImage.dylib (compatibility version 1.0.0, current version 703.0.18)
+	@rpath/libswiftDarwin.dylib (compatibility version 1.0.0, current version 703.0.18)
+	@rpath/libswiftDispatch.dylib (compatibility version 1.0.0, current version 703.0.18)
+	@rpath/libswiftFoundation.dylib (compatibility version 1.0.0, current version 703.0.18)
+	@rpath/libswiftObjectiveC.dylib (compatibility version 1.0.0, current version 703.0.18)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;It is the way for application to load libraries from runtime-defined locations. Locations to be searched are defined in Xcode using &lt;code&gt;Runpath Search Paths&lt;/code&gt; settings.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://spinaldevelopment.com/img/swift-in-nonswift-env-rpath.png&#34; alt=&#34;Runpath Search Paths&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;Run paths&lt;/code&gt; defined in binary can also be inspected using &lt;code&gt;otool&lt;/code&gt;.
+Call &lt;code&gt;otool -l &amp;lt;Path_To_Binary&amp;gt;&lt;/code&gt; and look for &lt;code&gt;LC_RPATH&lt;/code&gt;.
+For example:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Load command 24
+          cmd LC_RPATH
+      cmdsize 40
+         path @loader_path/../Frameworks (offset 12)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;solution-1-xcode-setting&#34;&gt;Solution 1 - Xcode setting&lt;/h2&gt;
+
+&lt;p&gt;To make swift frameworks visible to loader make sure the &lt;code&gt;Runpath Search Paths&lt;/code&gt; setting is configured properly.
+Unfortunately relative paths are not permitted. But one may use path variables defined in &lt;a href=&#34;https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man1/dyld.1.html&#34;&gt;man dyld&lt;/a&gt;:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;@loader_path&lt;/code&gt; - Path to folder containing your binary. For plugin this is plugin binary&amp;rsquo;s folder.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;@executable_path&lt;/code&gt; - Path to folder containing process main binary. For plugin this is host application binary&amp;rsquo;s folder.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Depending on the structure of your plugin you may use &lt;code&gt;@loader_path/Frameworks&lt;/code&gt;. This will work if your plugin structure is as follows:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt; - Plugin
+  - PluginBinary
+  - Frameworks
+    - swiftXXX...
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;or you may use &lt;code&gt;@loader_path/../Frameworks&lt;/code&gt; if the your plugin structure have AppBundle-like structure:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;- Plugin
+ - Contents
+    - MacOS
+      - PluginBinary
+    - Frameworks
+      - swiftXXX...
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;solution-2-install-name-tool&#34;&gt;Solution 2 - install_name_tool&lt;/h2&gt;
+
+&lt;p&gt;If for some reason you&amp;rsquo;re unable to update &lt;code&gt;Runpath Search Paths&lt;/code&gt; setting then you may also use tool &lt;a href=&#34;http://www.manpagez.com/man/1/install_name_tool/&#34;&gt;install_name_tool&lt;/a&gt;. This tool can be used to replace &lt;code&gt;@rpath/swift...&lt;/code&gt; references with &lt;code&gt;@loader_path/YYY/swift...&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;You may use this script to update all swift references at once:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;echo otool -L &amp;quot;$FULL_EXECUTABLE_PATH&amp;quot; | grep @rpath | sed &#39;s/@rpath\///g&#39; | sed &#39;s/ (.*//g&#39; | xargs -t -I{} install_name_tool -change @rpath/{} @loader_path/../Frameworks/{} &amp;quot;$FULL_EXECUTABLE_PATH&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;where $FULL_EXECUTABLE_PATH must point to the binary.&lt;/p&gt;
+
+&lt;p&gt;You may do that automatically after each build by adding this script as a &lt;code&gt;Build Phase&lt;/code&gt;. One thing to keep in mind though is that this script will launch before installation phase. I had problems when I tried to mix this &lt;code&gt;Build Phase&lt;/code&gt; with &lt;code&gt;Installation Directory&lt;/code&gt; build setting and I&amp;rsquo;ve decided to install my plugin manually inside this script instead of using &lt;code&gt;Installation Directory&lt;/code&gt; build setting.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>We&#39;re launching</title>
