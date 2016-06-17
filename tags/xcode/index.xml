@@ -17,18 +17,20 @@
       <guid>http://spinaldevelopment.com/post/swift-binary-in-nonswift-env/</guid>
       <description>
 
-&lt;p&gt;Ever wanted to use swift to write your custom plugin for &lt;code&gt;XXX&lt;/code&gt; and got dreaded:&lt;/p&gt;
+&lt;p&gt;Ever wanted to use swift to write this super handy plugin for some application you use, or a system &lt;em&gt;Component&lt;/em&gt; and instead got dreaded:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;dlopen(TestFramework.framework/TestFramework, 5): Library not loaded: @rpath/libswiftAppKit.dylib
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;This error happens because loader can&amp;rsquo;t find swift libraries. But why is it so? Culprit of this error is &lt;code&gt;@rpath&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;This error happens because loader can&amp;rsquo;t find Swift libraries. But why is it so?&lt;/p&gt;
 
 &lt;h2 id=&#34;rpath&#34;&gt;@rpath&lt;/h2&gt;
 
-&lt;p&gt;Swift libraries are referenced using &lt;em&gt;run-paths&lt;/em&gt;. They&amp;rsquo;re described in apple &lt;a href=&#34;https://developer.apple.com/library/mac/documentation/DeveloperTools/Conceptual/DynamicLibraries/100-Articles/RunpathDependentLibraries.html&#34;&gt;documentation&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Culprit of above error is &lt;code&gt;@rpath&lt;/code&gt;.&lt;/p&gt;
 
-&lt;p&gt;You can use &lt;code&gt;otool -L &amp;lt;Path_To_Binary&amp;gt;&lt;/code&gt; to see that.
+&lt;p&gt;Swift libraries are referenced using &lt;em&gt;run-paths&lt;/em&gt;. Run-paths are described in apple &lt;a href=&#34;https://developer.apple.com/library/mac/documentation/DeveloperTools/Conceptual/DynamicLibraries/100-Articles/RunpathDependentLibraries.html&#34;&gt;documentation&lt;/a&gt;. They are the way for the application to load libraries from runtime-defined locations. Binary defines its &lt;code&gt;rpaths&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;You can use &lt;code&gt;otool -L &amp;lt;Path_To_Binary&amp;gt;&lt;/code&gt; to see Swift dependencies.
 You may get something similar to:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;/System/Library/Frameworks/AudioToolbox.framework/Versions/A/AudioToolbox (compatibility version 1.0.0, current version 492.0.0)
@@ -48,7 +50,7 @@ You may get something similar to:&lt;/p&gt;
 	@rpath/libswiftObjectiveC.dylib (compatibility version 1.0.0, current version 703.0.18)
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;It is the way for application to load libraries from runtime-defined locations. Locations to be searched are defined in Xcode using &lt;code&gt;Runpath Search Paths&lt;/code&gt; settings.&lt;/p&gt;
+&lt;p&gt;Locations to be searched are defined in Xcode using &lt;code&gt;Runpath Search Paths&lt;/code&gt; settings.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&#34;http://spinaldevelopment.com/img/swift-in-nonswift-env-rpath.png&#34; alt=&#34;Runpath Search Paths&#34; /&gt;&lt;/p&gt;
 
@@ -61,6 +63,8 @@ For example:&lt;/p&gt;
       cmdsize 40
          path @loader_path/../Frameworks (offset 12)
 &lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;There are two solutions fixing missing Swift dependencies. Easy one and complex one. First solution should be used when possible, for it&amp;rsquo;s a lot easier to implement. Second one should be used only if it is impossible to use first one.&lt;/p&gt;
 
 &lt;h2 id=&#34;solution-1-xcode-setting&#34;&gt;Solution 1 - Xcode setting&lt;/h2&gt;
 

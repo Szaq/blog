@@ -52,18 +52,20 @@
     <section class="post-content">
         
 
-<p>Ever wanted to use swift to write your custom plugin for <code>XXX</code> and got dreaded:</p>
+<p>Ever wanted to use swift to write this super handy plugin for some application you use, or a system <em>Component</em> and instead got dreaded:</p>
 
 <pre><code>dlopen(TestFramework.framework/TestFramework, 5): Library not loaded: @rpath/libswiftAppKit.dylib
 </code></pre>
 
-<p>This error happens because loader can&rsquo;t find swift libraries. But why is it so? Culprit of this error is <code>@rpath</code>.</p>
+<p>This error happens because loader can&rsquo;t find Swift libraries. But why is it so?</p>
 
 <h2 id="rpath">@rpath</h2>
 
-<p>Swift libraries are referenced using <em>run-paths</em>. They&rsquo;re described in apple <a href="https://developer.apple.com/library/mac/documentation/DeveloperTools/Conceptual/DynamicLibraries/100-Articles/RunpathDependentLibraries.html">documentation</a>.</p>
+<p>Culprit of above error is <code>@rpath</code>.</p>
 
-<p>You can use <code>otool -L &lt;Path_To_Binary&gt;</code> to see that.
+<p>Swift libraries are referenced using <em>run-paths</em>. Run-paths are described in apple <a href="https://developer.apple.com/library/mac/documentation/DeveloperTools/Conceptual/DynamicLibraries/100-Articles/RunpathDependentLibraries.html">documentation</a>. They are the way for the application to load libraries from runtime-defined locations. Binary defines its <code>rpaths</code>.</p>
+
+<p>You can use <code>otool -L &lt;Path_To_Binary&gt;</code> to see Swift dependencies.
 You may get something similar to:</p>
 
 <pre><code>/System/Library/Frameworks/AudioToolbox.framework/Versions/A/AudioToolbox (compatibility version 1.0.0, current version 492.0.0)
@@ -83,7 +85,7 @@ You may get something similar to:</p>
 	@rpath/libswiftObjectiveC.dylib (compatibility version 1.0.0, current version 703.0.18)
 </code></pre>
 
-<p>It is the way for application to load libraries from runtime-defined locations. Locations to be searched are defined in Xcode using <code>Runpath Search Paths</code> settings.</p>
+<p>Locations to be searched are defined in Xcode using <code>Runpath Search Paths</code> settings.</p>
 
 <p><img src="http://spinaldevelopment.com/img/swift-in-nonswift-env-rpath.png" alt="Runpath Search Paths" /></p>
 
@@ -96,6 +98,8 @@ For example:</p>
       cmdsize 40
          path @loader_path/../Frameworks (offset 12)
 </code></pre>
+
+<p>There are two solutions fixing missing Swift dependencies. Easy one and complex one. First solution should be used when possible, for it&rsquo;s a lot easier to implement. Second one should be used only if it is impossible to use first one.</p>
 
 <h2 id="solution-1-xcode-setting">Solution 1 - Xcode setting</h2>
 
@@ -204,7 +208,7 @@ Unfortunately relative paths are not permitted. But one may use path variables d
     <footer id="site-footer">
         <div class="container">
             <a href="http://spinaldevelopment.com/index.xml" title="Get the RSS feed"><span class="tooltip"><i class="fa fa-rss"></i></span></a>
-            <section>&copy; <a href="http://spinaldevelopment.com/">Łukasz Kwoska</a> 2015 | All rights reserved</section>
+            <section>&copy; <a href="http://spinaldevelopment.com/">Łukasz Kwoska</a> 2016 | All rights reserved</section>
             <section>Theme by <a href="http://www.jrdnbwmn.com">Jordan Bowman</a>. Generated with <a href="http://gohugo.io/">Hugo</a>.</section>
         </div>
     </footer>
@@ -213,6 +217,7 @@ Unfortunately relative paths are not permitted. But one may use path variables d
     <script type="text/javascript">
       $(".heading").fitText();
     </script>
+
 
     <script>
         var _gaq=[['_setAccount','UA-79477025-1'],['_trackPageview']];
